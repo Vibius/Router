@@ -31,7 +31,7 @@ class Router{
 			throw new Exception("Callback of route ($uri) must be callable, not ".gettype($callback));
 		}
 
-		$this->container->add($uri, [
+		$this->container->add($uri.'%%%'.$type, [
 			'uri' => $uri,
 			'type' => $type,
 			'callback' => $callback,

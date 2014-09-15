@@ -2,50 +2,53 @@
 
 namespace Vibius\Router;
 
-use Request, Exception, stdClass;
+use Request, Exception, stdClass, Server, Container, Router;
 
 class RequestParser{
 
 	public function parse($data){
 
+		//request information
 		$this->data = [
 			'uri' => Request::get('data.uri'),
-			'post' => Request::get('data.post'),
-			'get' => Request::get('data.get'),
-			'type' => 'GET'
+			'type' => Server::get('REQUEST_METHOD')
 		];
 
+		//request simulation
 		if( !empty($data) ){
+			
 			if( empty($data['uri']) ){
 				throw new Exception('Modified request requires valid URI');
 			}
+
+			//edit request information
 			$this->data = array_merge($this->data, $data);
 		}
 
+		//build up response
 		$this->response = [];
 
 		$this->response = $this->getFulltextMatch();
-		
-		if( empty($this->response) ){
-			$this->response = $this->getRegexMatch();
-		}
 
 		return $this->response;
 	}
 
 	public function getFulltextMatch(){
 		foreach (\Router::getDefinedRoutes() as $key => $value) {
-			if( $key == $this->data['uri'] ){
+			if( $key == $this->data['uri'].'%%%'.$this->data['type']){
 				return $value;
 			}
 		}
 	}
 
 	public function getRegexMatch(){
+
+		$this->alternatives = Container::open('Router.alternatives')->storage;
+
 		foreach (\Router::getDefinedRoutes() as $key => $value) {
-			if( $key == $this->data['uri'] ){
-				return $value;
-			}
+			$key = explode('%%%', $key)[0];
+			
+			
 		}
 	}
 

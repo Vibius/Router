@@ -8,7 +8,7 @@ class ServerData extends \Vibius\Container\Container{
 
 	public function __construct(){
 
-		$this->container = parent::open('RequestData');
+		$this->container = parent::open('ServerData', true);
 
 		foreach($_SERVER as $key => $value){
 			$this->container->add($key, $value);

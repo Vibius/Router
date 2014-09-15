@@ -10,7 +10,13 @@ class RequestData extends \Vibius\Container\Container{
 	
 	function __construct(){
 
-		$this->container = parent::open('RequestData');
+		$this->container = parent::open('RequestData', true);
+
+		$this->postData = parent::open('POST', true);
+		$this->getData = parent::open('GET', true);
+		$this->requestData = parent::open('REQUEST', true);
+		$this->cookieData = parent::open('COOKIE', true);
+		$this->sessionData = parent::open('SESSION', true);
 
 		$appRoot = explode(Server::get('DOCUMENT_ROOT'), vibius_INDEXPATH)[1];
 		$reqUri = explode($appRoot, Server::get('REDIRECT_URL'));
@@ -21,34 +27,32 @@ class RequestData extends \Vibius\Container\Container{
 			$reqUri = $reqUri[1];
 		}
 
-		
-		$this->container->add('data.request', $_REQUEST); 
-		$this->container->add('data.get', $_GET); 
-		$this->container->add('data.post', $_POST); 
+		foreach ($_GET as $key => $value) {
+			$this->getData->add($key, $value);
+		}
+
+		foreach ($_POST as $key => $value) {
+			$this->postData->add($key, $value);
+		}
+
+		foreach ($_REQUEST as $key => $value) {
+			$this->requestData->add($key, $value);
+		}
+
+		foreach ($_COOKIE as $key => $value) {
+			$this->requestData->add($key, $value);
+		}
+
+		$this->container->add('get', $this->getData);
+		$this->container->add('post', $this->postData);
+		$this->container->add('request', $this->requestData);
+		$this->container->add('session', $this->sessionData);
+		$this->container->add('cookie', $this->cookieData);
+
 		$this->container->add('data.uri', $reqUri);
 	}
 
-	public function postData($key){
-		$post = $this->container->get('data.post');
-		if( !isset($post[$key]) ){
-			throw new Exception("Post key ($key) does not exist");
-		}
-		return $result;
-	}
-
-	public function getData($key){
-		$get = $this->container->get('data.get');
-		if( !isset($get[$key]) ){
-			throw new Exception("Get key ($key) does not exist");
-		}
-		return $result;
-	}
-
-	public function requestData($key){
-		$request = $this->container->get('data.request');
-		if( !isset($get[$key]) ){
-			throw new Exception("Request key ($key) does not exist");
-		}
-		return $result;
+	public function override($key, $value){
+		throw new Exception("Request data cannot be overriden");
 	}
 }
