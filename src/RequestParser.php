@@ -30,6 +30,10 @@ class RequestParser{
 
 		$this->response = $this->getFulltextMatch();
 
+		if( empty($this->response) ){
+			throw new Exception('Route not found');
+		}
+
 		return $this->response;
 	}
 

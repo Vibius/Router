@@ -37,23 +37,53 @@ class Router{
 			'callback' => $callback,
 			'before' => function(){},
 			'after' => function(){},
-			'parameters' => []
+			'aliases' => []
 		]);
 
 		$this->last = $uri;
+		$this->lastType = $type;
 
 		return $this;
 	}
 
-	public function edit($uri, $properties){
+	public function alias($aliases){
 
-		if( !$this->has($uri) ){
-			throw new Exception("Route ($uri) does not exist");
+		foreach($aliases as $uri => $type){
+			
+			if( empty($type) ){
+				$type = 'GET';
+			}
+
+			if( $this->has($uri) ){
+				throw new Exception("Route ($uri) already exists");
+			}
+
+			$aliasParent = $this->container->get("$this->last%%%$this->lastType");
+
+			if( !isset($aliasParent['aliases'][$uri.'%%%'.$type]) ){
+				array_push($aliasParent['aliases'], $uri.'%%%'.$type);
+			}
+
+			$this->container->override("$this->last%%%$this->lastType", $aliasParent);
+			$this->container->add($uri.'%%%'.$type, $aliasParent);
+
 		}
 
-		$result = array_merge( $this->container->get($uri), $properties );
+	}
 
-		$this->container->override($uri, $result);
+	public function edit($uri, $type, $properties){
+
+		if( !$this->has("$uri%%%$type") ){
+			throw new Exception("Route ($uri) with type ($type) does not exist");
+		}
+
+		$result = array_merge( $this->container->get("$uri%%%$type"), $properties );
+
+		foreach($result['aliases'] as $alias){
+			$this->container->override($alias, $result);
+		}
+
+		$this->container->override("$uri%%%$type", $result);
 
 		$this->last = $uri;
 
@@ -62,18 +92,17 @@ class Router{
 
 	public function override($uri, $callback, $type = 'GET'){
 		
-		if( !$this->has($uri) ){
+		if( !$this->has("$uri%%%$type") ){
 			throw new Exception("Route ($uri) does not exist");
 		}
 
-		$this->container->override($uri, [
+		$this->container->override("$uri%%%$type", [
 			'uri' => $uri,
 			'type' => $type,
 			'callback' => $callback,
 			'before' => function(){},
 			'after' => function(){},
-			'parameters' => []
-
+			'aliases' => []
 		]);
 
 		$this->last = $uri;
@@ -87,10 +116,10 @@ class Router{
 			throw new Exception("Before action of route ($uri) must be callable, not ".gettype($callback));
 		}
 
-		$route = $this->container->get( $this->last );
+		$route = $this->container->get( "$this->last%%%$this->lastType" );
 		$route['before'] = $action;
 
-		$this->container->override( $this->last, $route );
+		$this->container->override( "$this->last%%%$this->lastType" , $route );
 
 		return $this;
 
@@ -102,25 +131,13 @@ class Router{
 			throw new Exception("After action of route ($uri) must be callable, not ".gettype($callback));
 		}
 
-		$route = $this->container->get( $this->last );
+		$route = $this->container->get( "$this->last%%%$this->lastType" );
 		$route['after'] = $action;
 
-		$this->container->override( $this->last, $route );
+		$this->container->override( "$this->last%%%$this->lastType" , $route );
 
 		return $this;
 
-	}
-
-	public function parameters($parameters){
-
-		if( !is_array($parameters) ){
-			throw new Exception("Parameters must be in form of array");
-		}
-
-		$route = $this->container->get( $this->last );
-		$route['parameters'] = $parameters;
-
-		return $this;
 	}
 
 	public function alternatives(){
