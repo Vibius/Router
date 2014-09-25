@@ -8,6 +8,26 @@ class RequestData extends \Vibius\Container\Container{
 
 	use \Vibius\Container\Methods;
 	
+	public function get($param){
+		return $this->container->get('get')->get($param);
+	}
+
+	public function post($param){
+		return $this->container->get('post')->get($param);
+	}
+
+	public function session($param){
+		return $this->container->get('session')->get($param);
+	}
+
+	public function cookie($param){
+		return $this->container->get('cookie')->get($param);
+	}
+
+	public function getUri(){
+		return $this->uri;
+	}
+
 	function __construct(){
 
 		$this->container = parent::open('RequestData', true, true);
@@ -49,7 +69,7 @@ class RequestData extends \Vibius\Container\Container{
 		$this->container->add('session', $this->sessionData);
 		$this->container->add('cookie', $this->cookieData);
 
-		$this->container->add('data.uri', $reqUri);
+		$this->uri = $reqUri;
 	}
 
 	public function override($key, $value){

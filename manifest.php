@@ -9,7 +9,7 @@
             "provider" => "Vibius\Router\Router"
         ],
 		
-		"Server" => [
+        "Server" => [
             "alias" => "server",
             "provider" => 'Vibius\Router\ServerData($_SERVER)'
         ],

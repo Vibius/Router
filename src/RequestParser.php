@@ -2,7 +2,7 @@
 
 namespace Vibius\Router;
 
-use Request, Exception, stdClass, Server, Container, Router;
+use Request, Exception, stdClass, Server, Container;
 
 class RequestParser{
 
@@ -10,7 +10,7 @@ class RequestParser{
 
 		//request information
 		$this->data = [
-			'uri' => Request::get('data.uri'),
+			'uri' => Request::getUri(),
 			'type' => Server::get('REQUEST_METHOD')
 		];
 
