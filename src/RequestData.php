@@ -28,6 +28,16 @@ class RequestData extends \Vibius\Container\Container{
 		return $this->uri;
 	}
 
+	public function segment($offset){
+		return explode('/', $this->uri)[$offset];
+	}
+
+	public function segmentArray(){
+		$arr = explode('/', $this->uri);
+		array_shift($arr);
+		return $arr;
+	}
+
 	function __construct(){
 
 		$this->container = parent::open('RequestData', true, true);
