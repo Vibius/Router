@@ -23,7 +23,7 @@ class Router{
 
 	public function add($uri, $callback, $type = 'GET'){
 
-		if( $this->has($uri) ){
+		if( $this->has("$uri%%%$type") ){
 			throw new Exception("Route ($uri) already exists");
 		}
 
@@ -50,10 +50,7 @@ class Router{
 
 		foreach($aliases as $uri => $type){
 			
-			if( empty($type) ){
-				$type = 'GET';
-			}
-
+			
 			if( $this->has($uri) ){
 				throw new Exception("Route ($uri) already exists");
 			}

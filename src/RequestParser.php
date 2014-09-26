@@ -25,35 +25,34 @@ class RequestParser{
 			$this->data = array_merge($this->data, $data);
 		}
 
-		//build up response
-		$this->response = [];
+		$this->alternatives = Container::open('Router.alternatives')->storage;
 
-		$this->response = $this->getFulltextMatch();
-
-		if( empty($this->response) ){
-			throw new Exception('Route not found');
-		}
-
-		return $this->response;
-	}
-
-	public function getFulltextMatch(){
-		foreach (\Router::getDefinedRoutes() as $key => $value) {
-			if( $key == $this->data['uri'].'%%%'.$this->data['type']){
-				return $value;
-			}
-		}
+		return $this->getRegexMatch();
 	}
 
 	public function getRegexMatch(){
 
-		$this->alternatives = Container::open('Router.alternatives')->storage;
+		$uri = $this->data['uri'];
 
-		foreach (\Router::getDefinedRoutes() as $key => $value) {
-			$key = explode('%%%', $key)[0];
+		foreach (\Router::getDefinedRoutes() as $route => $routeContents) {
+			$routeDetails = explode('%%%', $route);
+			$routeUriRegex = preg_replace('(/)', '(\/)', $routeDetails[0]);
+
+			foreach ( $this->alternatives as $alternative => $alternativeVal ){
+				$pattern = '/('.$alternative.')/is';
+				if( $c = preg_match_all($pattern,$routeUriRegex, $matches) ){
+					$routeUriRegex = preg_replace($pattern, $alternativeVal, $routeUriRegex);
+				}
+			}
 			
-			
+			if( preg_match('/^'.$routeUriRegex.'$/is', $uri) ){
+				if( $routeDetails[1] == $this->data['type'] ){
+					return $routeContents;
+				}
+			}
 		}
+		
 	}
+
 
 }
