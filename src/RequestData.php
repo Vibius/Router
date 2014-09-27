@@ -70,7 +70,7 @@ class RequestData extends \Vibius\Container\Container{
 		}
 
 		foreach ($_COOKIE as $key => $value) {
-			$this->requestData->add($key, $value);
+			$this->cookieData->add($key, $value);
 		}
 
 		$this->container->add('get', $this->getData);
