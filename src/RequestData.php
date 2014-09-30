@@ -48,14 +48,27 @@ class RequestData extends \Vibius\Container\Container{
 		$this->cookieData = parent::open('COOKIE', true, true);
 		$this->sessionData = parent::open('SESSION', true, true);
 
-		$appRoot = explode(Server::get('DOCUMENT_ROOT'), vibius_INDEXPATH)[1];
-		$reqUri = explode($appRoot, Server::get('REDIRECT_URL'));
+		if( !empty($_SERVER['REDIRECT_URL']) ){
+			$appRoot = explode(Server::get('DOCUMENT_ROOT'), vibius_INDEXPATH);
+			if( !empty($appRoot[1]) ){
+				$appRoot = $appRoot[1];
+				$reqUri = explode($appRoot, Server::get('REDIRECT_URL'));
+			}else{
+				$reqUri = Server::get('REDIRECT_URL');
+			}
+
+		}else{
+			$reqUri = [];
+		}
+
 
 		if( !isset($reqUri[1]) ){
 			$reqUri = '/';
 		}else{
 			$reqUri = $reqUri[1];
 		}
+
+
 
 		foreach ($_GET as $key => $value) {
 			$this->getData->add($key, $value);
